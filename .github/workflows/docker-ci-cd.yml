@@ -1,4 +1,4 @@
-name: Docker CI/CD Pipeline
+name: CI/CD Pipeline
 
 on:
   push:
@@ -16,9 +16,6 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      - name: Docker Info
-        run: docker --version && docker info
-
       - name: Cache Docker layers
         uses: actions/cache@v3
         with:
@@ -28,18 +25,16 @@ jobs:
             ${{ runner.os }}-docker-
 
       - name: Log in to DockerHub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: |
+          echo "${DOCKERHUB_TOKEN}" | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin
 
       - name: Build and push Docker image
         run: |
-          docker buildx build --cache-from=type=local,src=/tmp/.buildx-cache \
-                              --cache-to=type=local,dest=/tmp/.buildx-cache \
-                              --platform linux/amd64 \
-                              -t ${{ secrets.DOCKERHUB_USERNAME }}/my-app:latest . \
-                              --push  # Сборка и публикация Docker-образа
+          docker buildx build -f Docker_2/nginx/Dockerfile -t ${{ secrets.DOCKERHUB_USERNAME }}/my-app:latest .
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/my-app:latest
 
   deploy:
     runs-on: ubuntu-latest
@@ -49,18 +44,11 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
 
-      - name: Pull and run Docker container
+      - name: Run Docker container
         run: |
-          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/my-app:latest
-          docker run -d --name my-nginx -p 80:80 -p 443:443 --rm ${{ secrets.DOCKERHUB_USERNAME }}/my-app:latest
+          docker run -d --name my-nginx -p 80:80 -p 443:443 ${{ secrets.DOCKERHUB_USERNAME }}/my-app:latest
 
-      - name: Wait for container to be ready
+      - name: Test application (curl)
         run: |
-          for i in {1..10}; do
-            if curl -vk https://localhost:443; then
-              echo "Приложение отвечает по HTTPS.";
-              exit 0;
-            fi
-            echo "Приложение не доступно."
-            sleep 5;
-          done
+          sleep 10
+          curl -vk https://localhost:443
