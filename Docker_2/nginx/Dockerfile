@@ -5,7 +5,7 @@ COPY certs/selfsigned.crt /etc/ssl/certs/selfsigned.crt
 COPY certs/selfsigned.key /etc/ssl/private/selfsigned.key
 
 
-COPY nginx.conf /etc/nginx/nginx.conf
+COPY Docker_2/nginx/nginx.conf /etc/nginx/nginx.conf
 
 
 COPY Docker_2/nginx/static /usr/share/nginx/html
