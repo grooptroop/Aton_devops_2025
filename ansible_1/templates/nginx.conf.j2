@@ -1,0 +1,36 @@
+worker_processes {{ nginx_worker_processes | default(2) }};
+error_log /var/log/nginx/error.log;
+pid /var/run/nginx.pid;
+
+events {
+worker_connections 1024;
+}
+
+http {
+include       mime.types;
+default_type  application/octet-stream;
+
+sendfile on;
+keepalive_timeout 65;
+
+server {
+    listen {{ nginx_port1 | default(80) }};
+    server_name {{ nginx_server_name | default('localhost') }};
+
+    root {{ nginx_root | default('/var/www/html') }};
+    index index.html index.htm;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+
+    error_page 404 /404.html;
+
+    location = /404.html {
+        internal;
+    }
+
+    access_log /var/log/nginx/access.log;
+}
+
+}

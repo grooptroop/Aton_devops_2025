@@ -2,7 +2,7 @@
 
 
 TO="atlovf@gmail.com"
-THRESHOLD= 15
+THRESHOLD = 15
 
 
 USAGE=$(df / | grep / | awk '{print $5}' | sed 's/%//')
