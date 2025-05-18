@@ -1,8 +1,8 @@
 FROM nginx:alpine
 
 
-COPY certs/selfsigned.crt /etc/ssl/certs/selfsigned.crt
-COPY certs/selfsigned.key /etc/ssl/private/selfsigned.key
+COPY Docker_2/nginx/certs/selfsigned.crt /etc/ssl/certs/selfsigned.crt
+COPY Docker_2/nginx/certs/selfsigned.key /etc/ssl/private/selfsigned.key
 
 
 COPY Docker_2/nginx/nginx.conf /etc/nginx/nginx.conf
